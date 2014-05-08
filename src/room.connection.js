@@ -1,9 +1,6 @@
-if (typeof(flect) === "undefined") flect = {};
+if (typeof(room) === "undefined") room = {};
 
 $(function() {
-	function endsWith(str, suffix) {
-		return str.indexOf(suffix, str.length - suffix.length) !== -1;
-	}
 	/**
 	 * settings
 	 * - onOpen(event)
@@ -12,20 +9,8 @@ $(function() {
 	 * - onMessage(data, startTime)
 	 * - onServerError(msg)
 	 */
-	flect.Connection = function(wsUri, logger) {
+	room.Connection = function(wsUri, logger) {
 		var MAX_RETRY = 5;
-		function useAjax() {
-			if (arguments.length == 0) {
-				return ajaxPrefix;
-			}
-			var arg = arguments[0];
-			if (arg) {
-				ajaxPrefix = arg;
-			} else {
-				ajaxPrefix = null;
-			}
-			return self;
-		}
 		function request(params) {
 			/*
 			if (!isConnected()) {
@@ -41,64 +26,8 @@ $(function() {
 			if (settings.onRequest) {
 				settings.onRequest(params.command, params.data);
 			}
-			if (ajaxPrefix) {
-				ajaxRequest(params)
-			} else {
-				websocketRequest(params)
-			}
+			websocketRequest(params)
 			return self;
-		}
-		function ajaxRequest(params) {
-			logger.log("ajax", params.command);
-			var startTime = new Date().getTime(),
-				id = ++requestId,
-				url = params.url ? params.url : ajaxPrefix,
-				orgSuccess = params.success;
-
-			if (params.command) {
-				if (!endsWith(url, "/")) {
-					url += "/";
-				}
-				url += params.command;
-				delete params.command;
-			}
-			url += "?id=" + id;
-			if (params.log) {
-				url += "&log=" + params.log;
-				delete params.log;
-			}
-			params.url = url;
-			if (!params.type) {
-				params.type = "POST";
-			}
-			if (params.data) {
-				var data = JSON.stringify(params.data);
-				params.data = {
-					"data" : data
-				}
-			}
-			params.success = function(data) {
-				if (settings.onMessage) {
-					settings.onMessage(data, startTime);
-				}
-				if (!data) {
-					return;
-				}
-				if (data.type == "error") {
-					if (settings.onServerError) {
-						settings.onServerError(data.data);
-					}
-					return;
-				}
-				var func = orgSuccess;
-				if (!func) {
-					func = listeners[params.command];
-				}
-				if (func) {
-					func(data.data)
-				}
-			}
-			$.ajax(params);
 		}
 		//command, log, data, success
 		function websocketRequest(params) {
@@ -217,7 +146,6 @@ $(function() {
 			requestId = 0,
 			times = {},
 			listeners = {},
-			ajaxPrefix = null,
 			readyFuncs = [],
 			opened = false,
 			retryCount = 0;
@@ -225,7 +153,6 @@ $(function() {
 
 
 		$.extend(this, {
-			"useAjax" : useAjax,
 			"request" : request,
 			"addEventListener" : addEventListener,
 			"removeEventListener" : removeEventListener,
