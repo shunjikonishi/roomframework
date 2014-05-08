@@ -141,6 +141,11 @@ $(function() {
 			socket.onclose = onClose;
 			return socket;
 		}
+		if (!logger) {
+			logger = {
+				"log" : function() {}
+			}
+		}
 		var self = this,
 			settings = {},
 			requestId = 0,
