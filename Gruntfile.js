@@ -20,6 +20,14 @@ module.exports = function(grunt) {
                     src : "**", 
                     dest : "../room-sandbox/gh-pages/sample/javascripts/"
                 }]
+            },
+            dist2report: {
+                files: [{
+                    expand: true,
+                    cwd : "dist/",
+                    src : "roomframework.*", 
+                    dest : "../../report2/public/javascripts/ext/roomframework/"
+                }]
             }
         },
 

@@ -37,6 +37,18 @@ $(function() {
 				}
 			}
 		}
+		function remove(key) {
+			if (storage) {
+				try {
+					storage.removeItem(key);
+				} catch (e) {
+					//Ignore. Happened when cookie is disabled, or quota exceeded.
+					if (logErrors && console) {
+						console.log(e);
+					}
+				}
+			}
+		}
 		function keys() {
 			var ret = [];
 			if (storage) {
@@ -57,6 +69,7 @@ $(function() {
 			"get" : get,
 			"getAsJson" : getAsJson,
 			"put" : put,
+			"remove" : remove,
 			"keys" : keys
 		});
 	};
