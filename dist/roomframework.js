@@ -247,11 +247,34 @@ $(function() {
 			}
 			return ret;
 		}
+		function size() {
+			try {
+				return sotrage ? storage.length : 0;
+			} catch (e) {
+				if (logErrors && console) {
+					console.log(e);
+				}
+			}
+		}
+		function clear() {
+			if (storage) {
+				try {
+					storage.clear();
+				} catch (e) {
+					//Ignore. Happened when cookie is disabled. 
+					if (logErrors && console) {
+						console.log(e);
+					}
+				}
+			}
+		}
 		$.extend(this, {
 			"get" : get,
 			"getAsJson" : getAsJson,
 			"put" : put,
 			"remove" : remove,
+			"size" : size,
+			"clear" : clear,
 			"keys" : keys
 		});
 	};
