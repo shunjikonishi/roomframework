@@ -12,6 +12,11 @@ $(function() {
 
 	/**
 	 * settings
+	 * - url
+	 * - maxRetry
+	 * - retryInterval
+	 * - logger
+	 * - authToken
 	 * - onOpen(event)
 	 * - onClose(event)
 	 * - onRequest(command, data)
@@ -20,9 +25,11 @@ $(function() {
 	 */
 	room.Connection = function(settings) {
 		function request(params) {
-			logger.log("request", params);
+			if (!settings.logCommand || settings.logCommand != params.command) {
+				logger.log("request", params);
+			}
 			if (!isConnected()) {
-				if (retryCount < MAX_RETRY) {
+				if (retryCount < settings.maxRetry) {
 					ready(function() {
 						request(params);
 					});
@@ -64,6 +71,17 @@ $(function() {
 				settings.onOpen(event);
 			}
 			retryCount = 0;
+			if (settings.authToken) {
+				request({
+					"command" : "room.auth",
+					"data" : settings.authToken,
+					"success" : function(data) {
+						if (data.status == "OK" && data.token) {
+							settings.authToken = data.token;
+						}
+					}
+				});
+			}
 			for (var i=0; i<readyFuncs.length; i++) {
 				readyFuncs[i]();
 			}
@@ -152,6 +170,9 @@ $(function() {
 			};
 		}
 		settings = $.extend({}, defaultSettings, settings);
+		if (settings.logCommand && room.logger && room.logger.WsLogger) {
+			settings.logger = new room.logger.WsLogger(this, settings.logCommand);
+		}
 		var self = this,
 			logger = settings.logger,
 			requestId = 0,
