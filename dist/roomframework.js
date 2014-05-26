@@ -25,15 +25,15 @@ $(function() {
 	 */
 	room.Connection = function(settings) {
 		function request(params) {
-			if (!settings.logCommand || settings.logCommand != params.command) {
-				logger.log("request", params);
-			}
+			logger.log("request", params);
 			if (!isConnected()) {
 				if (retryCount < settings.maxRetry) {
 					ready(function() {
 						request(params);
 					});
-					socket = createWebSocket();
+					if (!openning) {
+						socket = createWebSocket();
+					}
 				}
 				return;
 			}
@@ -66,6 +66,7 @@ $(function() {
 			return self;
 		}
 		function onOpen(event) {
+			openning = false;
 			logger.log("onOpen", event);
 			if (settings.onOpen) {
 				settings.onOpen(event);
@@ -88,7 +89,7 @@ $(function() {
 			readyFuncs = [];
 		}
 		function onMessage(event) {
-			logger.log("receive", event);
+			logger.log("receive", event.data);
 			var data = JSON.parse(event.data),
 				startTime = times[data.id],
 				func = null;
@@ -157,6 +158,7 @@ $(function() {
 			return socket.readyState == 1;//OPEN
 		}
 		function createWebSocket() {
+			openning = true;
 			var socket = new WebSocket(settings.url);
 			socket.onopen = onOpen;
 			socket.onmessage = onMessage;
@@ -170,16 +172,13 @@ $(function() {
 			};
 		}
 		settings = $.extend({}, defaultSettings, settings);
-		if (settings.logCommand && room.logger && room.logger.WsLogger) {
-			settings.logger = new room.logger.WsLogger(this, settings.logCommand);
-		}
 		var self = this,
 			logger = settings.logger,
 			requestId = 0,
 			times = {},
 			listeners = {},
 			readyFuncs = [],
-			opened = false,
+			openning = false,
 			retryCount = 0;
 			socket = createWebSocket();
 
@@ -334,7 +333,8 @@ $(function() {
 			return newObj;
 		}
 	}
-	room.logger.WsLogger = function(ws, commandName) {
+	room.logger.WsLogger = function(wsUrl, commandName) {
+		var ws = new room.Connection(wsUrl);
 		commandName = commandName || "log";
 		this.log = function() {
 			ws.request({

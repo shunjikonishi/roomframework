@@ -32,7 +32,8 @@ $(function() {
 			return newObj;
 		}
 	}
-	room.logger.WsLogger = function(ws, commandName) {
+	room.logger.WsLogger = function(wsUrl, commandName) {
+		var ws = new room.Connection(wsUrl);
 		commandName = commandName || "log";
 		this.log = function() {
 			ws.request({
