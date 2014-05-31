@@ -86,9 +86,7 @@ $(function() {
 					"command" : settings.authCommand,
 					"data" : settings.authToken,
 					"success" : function(data) {
-						if (data.status == "OK" && data.token) {
-							settings.authToken = data.token;
-						}
+						settings.authToken = data;
 					}
 				});
 			}
@@ -139,10 +137,10 @@ $(function() {
 				settings.onClose(event);
 			}
 			if (retryCount < settings.maxRetry) {
-				retryCount++;
 				setTimeout(function() {
 					socket = createWebSocket();
 				}, retryCount * 1000);
+				retryCount++;
 			}
 		}
 		function onError(event) {
@@ -325,9 +323,10 @@ if (typeof(room.logger) === "undefined") room.logger = {};
 
 $(function() {
 	function normalizeFunc(obj) {
-		var type;
-console.log("normalize: " + obj + ", " + $.isArray(obj));
-		if ($.isArray(obj)) {
+		var type = typeof(obj);
+		if (type !== "object") {
+			return obj;
+		} else if ($.isArray(obj)) {
 			var newArray = [];
 			for (var i=0; i<obj.length; i++) {
 				type = typeof(obj[i]);
@@ -368,17 +367,8 @@ console.log("normalize: " + obj + ", " + $.isArray(obj));
 			$("<p/>").text(JSON.stringify(msgs)).prependTo($div);
 		};
 	};
-	room.logger.WsLogger = function(wsUrl, commandName) {
-		var ws = new room.Connection(wsUrl);
-		commandName = commandName || "log";
-		this.log = function() {
-			ws.request({
-				"command": commandName,
-				"data": normalizeFunc(arguments)
-			});
-		};
-	};
 	room.logger.nullLogger = {
 		"log" : function() {}
 	};
+	room.logger.normalizeFunc = normalizeFunc;
 });

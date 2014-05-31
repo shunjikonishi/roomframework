@@ -86,9 +86,7 @@ $(function() {
 					"command" : settings.authCommand,
 					"data" : settings.authToken,
 					"success" : function(data) {
-						if (data.status == "OK" && data.token) {
-							settings.authToken = data.token;
-						}
+						settings.authToken = data;
 					}
 				});
 			}
@@ -139,10 +137,10 @@ $(function() {
 				settings.onClose(event);
 			}
 			if (retryCount < settings.maxRetry) {
-				retryCount++;
 				setTimeout(function() {
 					socket = createWebSocket();
 				}, retryCount * 1000);
+				retryCount++;
 			}
 		}
 		function onError(event) {
