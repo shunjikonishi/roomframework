@@ -7,6 +7,7 @@ module.exports = function(grunt) {
         concat: {
             dist : {
                 src : [
+                    "src/room.utils.js",
                     "src/room.connection.js",
                     "src/room.cache.js",
                     "src/room.logger.js"
@@ -18,6 +19,7 @@ module.exports = function(grunt) {
         uglify: {
             build: {
                 files: [{
+                    "dist/room.utils.min.js": "src/room.utils.js",
                     "dist/room.connection.min.js": "src/room.connection.js",
                     "dist/room.cache.min.js": "src/room.cache.js",
                     "dist/room.logger.min.js": "src/room.logger.js",

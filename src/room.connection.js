@@ -2,18 +2,40 @@ if (typeof(room) === "undefined") room = {};
 
 $(function() {
 	"use strict";
-
-	var nullLogger = {
-			"log" : function() {}
-		}, 
-		defaultSettings = {
-			"maxRetry" : 5,
-			"authCommand" : "room.auth",
-			"authError" : null,
-			"retryInterval" : 1000,
-			"watchInterval" : 60,
-			"logger" : nullLogger
-		};
+	var visibilityPrefix = (function() {
+		var key = "hidden",
+			prefix = ["webkit", "moz", "ms"];
+		if (key in document) {
+			return "";
+		}
+		key = "Hidden";
+		for (var i=0; i<prefix.length; i++) {
+			if (prefix + key in document) {
+				return prefix;
+			}
+		}
+		return "";
+	})(),
+	visibilityProp = visibilityPrefix ? visibilityPrefix + "Hidden" : "hidden",
+	visibilityChangeProp = visibilityPrefix + "visibilitychange",
+	nullLogger = {
+		"log" : function() {}
+	}, 
+	defaultSettings = {
+		"maxRetry" : 5,
+		"authCommand" : "room.auth",
+		"authError" : null,
+		"retryInterval" : 1000,
+		"watchInterval" : 60,
+		"noopCommand" : "noop",
+		"logger" : nullLogger
+	};
+	if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+		visibilityChangeProp = "pageshow";
+	}
+	function isDocumentVisible() {
+		return !document[visibilityProp];
+	}
 
 	/**
 	 * settings
@@ -146,7 +168,7 @@ $(function() {
 					if (!isConnected()) {
 						socket = createWebSocket();
 					}
-				}, retryCount * retryInterval);
+				}, retryCount * settings.retryInterval);
 				retryCount++;
 			}
 		}
@@ -199,6 +221,15 @@ $(function() {
 				socket = createWebSocket();
 			}
 		}
+		function sendNoop(interval, sendIfHidden, commandName) {
+			return setInterval(function() {
+				if (isConnected() && (sendIfHidden || isDocumentVisible())) {
+					request({
+						"command" : commandName || "noop"
+					});
+				}
+			}, interval);
+		}
 		if (typeof(settings) === "string") {
 			settings = {
 				"url" : settings
@@ -218,6 +249,17 @@ $(function() {
 			watchHandle = setInterval(watch, settings.watchInterval * 1000),
 			socket = createWebSocket();
 		$(window).on("beforeunload", close);
+logger.log("visibility", visibilityProp, visibilityChangeProp);
+		$(document).on(visibilityChangeProp, function() {
+			var bVisible = isDocumentVisible();
+			logger.log(visibilityChangeProp, "visible=" + bVisible);
+			if (bVisible && !isConnected()) {
+				socket = createWebSocket();
+			}
+		});
+		if (settings.noopCommand) {
+			on("noopCommand", function() {});
+		}
 
 
 		$.extend(this, {
