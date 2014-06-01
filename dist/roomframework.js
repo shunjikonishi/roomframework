@@ -40,7 +40,6 @@ $(function() {
 		"authCommand" : "room.auth",
 		"authError" : null,
 		"retryInterval" : 1000,
-		"watchInterval" : 60,
 		"noopCommand" : "noop",
 		"logger" : nullLogger
 	};
@@ -210,10 +209,6 @@ $(function() {
 				retryCount = settings.maxRetry;
 				socket.close();
 			}
-			if (watchHandle) {
-				clearInterval(watchHandle);
-				watchHandle = 0;
-			}
 		}
 		function isConnected() {
 			return socket.readyState == 1;//OPEN
@@ -227,14 +222,6 @@ $(function() {
 			socket.onclose = onClose;
 			return socket;
 		}
-		function watch() {
-			var time = new Date().getTime();
-			logger.log("watch", time - watchTime + "ms");
-			watchTime = time;
-			if (!isConnected() && retryCount < settings.maxRetry) {
-				socket = createWebSocket();
-			}
-		}
 		function sendNoop(interval, sendIfHidden, commandName) {
 			return setInterval(function() {
 				if (isConnected() && (sendIfHidden || isDocumentVisible())) {
@@ -242,7 +229,7 @@ $(function() {
 						"command" : commandName || "noop"
 					});
 				}
-			}, interval);
+			}, interval * 1000);
 		}
 		if (typeof(settings) === "string") {
 			settings = {
@@ -259,8 +246,6 @@ $(function() {
 			readyFuncs = [],
 			openning = false,
 			retryCount = 0,
-			watchTime = new Date().getTime(),
-			watchHandle = setInterval(watch, settings.watchInterval * 1000),
 			socket = createWebSocket();
 		$(window).on("beforeunload", close);
 logger.log("visibility", visibilityProp, visibilityChangeProp);
@@ -288,6 +273,7 @@ logger.log("visibility", visibilityProp, visibilityChangeProp);
 			"ready" : ready,
 			"close" : close,
 			"isConnected" : isConnected,
+			"sendNoop" : sendNoop,
 			"onOpen" : function(func) { settings.onOpen = func; return this;},
 			"onClose" : function(func) { settings.onClose = func; return this;},
 			"onRequest" : function(func) { settings.onRequest = func; return this;},
