@@ -1,13 +1,17 @@
 if (typeof(room) === "undefined") room = {};
 
 $(function() {
+	"use strict";
+
 	var nullLogger = {
 			"log" : function() {}
 		}, 
 		defaultSettings = {
 			"maxRetry" : 5,
 			"authCommand" : "room.auth",
+			"authError" : null,
 			"retryInterval" : 1000,
+			"watchInterval" : 60,
 			"logger" : nullLogger
 		};
 
@@ -87,7 +91,8 @@ $(function() {
 					"data" : settings.authToken,
 					"success" : function(data) {
 						settings.authToken = data;
-					}
+					},
+					"error" : settings.authError
 				});
 			}
 			for (var i=0; i<readyFuncs.length; i++) {
@@ -138,8 +143,10 @@ $(function() {
 			}
 			if (retryCount < settings.maxRetry) {
 				setTimeout(function() {
-					socket = createWebSocket();
-				}, retryCount * 1000);
+					if (!isConnected()) {
+						socket = createWebSocket();
+					}
+				}, retryCount * retryInterval);
 				retryCount++;
 			}
 		}
@@ -167,6 +174,10 @@ $(function() {
 				retryCount = settings.maxRetry;
 				socket.close();
 			}
+			if (watchHandle) {
+				clearInterval(watchHandle);
+				watchHandle = 0;
+			}
 		}
 		function isConnected() {
 			return socket.readyState == 1;//OPEN
@@ -179,6 +190,14 @@ $(function() {
 			socket.onerror = onError;
 			socket.onclose = onClose;
 			return socket;
+		}
+		function watch() {
+			var time = new Date().getTime();
+			logger.log("watch", time - watchTime + "ms");
+			watchTime = time;
+			if (!isConnected() && retryCount < settings.maxRetry) {
+				socket = createWebSocket();
+			}
 		}
 		if (typeof(settings) === "string") {
 			settings = {
@@ -194,8 +213,11 @@ $(function() {
 			errors = {},
 			readyFuncs = [],
 			openning = false,
-			retryCount = 0;
+			retryCount = 0,
+			watchTime = new Date().getTime(),
+			watchHandle = setInterval(watch, settings.watchInterval * 1000),
 			socket = createWebSocket();
+		$(window).on("beforeunload", close);
 
 
 		$.extend(this, {
