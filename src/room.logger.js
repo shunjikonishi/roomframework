@@ -34,6 +34,16 @@ $(function() {
 			return newObj;
 		}
 	}
+	room.logger.WsLogger = function(wsUrl, commandName) {
+		var ws = new room.Connection(wsUrl);
+		commandName = commandName || "log";
+		this.log = function() {
+			ws.request({
+				"command": commandName,
+				"data": normalizeFunc(arguments)
+			});
+		};
+	};
 	room.logger.DivLogger = function($div) {
 		this.log = function() {
 			var msgs = [];

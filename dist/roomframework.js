@@ -1,18 +1,5 @@
 if (typeof(room) === "undefined") room = {};
-
-$(function() {
-	function isMobile() {
-		return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-	}
-	function isIOS() {
-		return /iPhone|iPad|iPod/i.test(navigator.userAgent);
-	}
-	room.utils = {
-		"isMobile" : isMobile,
-		"isIOS" : isIOS
-	};
-});
-if (typeof(room) === "undefined") room = {};
+if (typeof(room.utils) === "undefined") room.utils = {};
 
 $(function() {
 	"use strict";
@@ -43,11 +30,17 @@ $(function() {
 		"noopCommand" : "noop",
 		"logger" : nullLogger
 	};
-	if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+	if (isIOS()) {
 		visibilityChangeProp = "pageshow";
 	}
 	function isDocumentVisible() {
 		return !document[visibilityProp];
+	}
+	function isMobile() {
+		return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+	}
+	function isIOS() {
+		return /iPhone|iPad|iPod/i.test(navigator.userAgent);
 	}
 
 	/**
@@ -87,7 +80,7 @@ $(function() {
 				listeners[id] = params.success;
 			}
 			if (params.error) {
-				errors[id] = params.success;
+				errors[id] = params.error;
 			}
 			var msg = {
 				"id" : id,
@@ -111,9 +104,16 @@ $(function() {
 		}
 		function off(name) {
 			delete listeners[name];
-			delete listeners[name];
+			delete errors[name];
 		}
 		function onOpen(event) {
+			function authError(data) {
+				logger.log("authError", settings.url);
+				retryCount = settings.maxRetry;
+				if (settings.authError) {
+					settings.authError(data);
+				}
+			}
 			openning = false;
 			logger.log("onOpen", settings.url);
 			if (settings.onOpen) {
@@ -127,7 +127,7 @@ $(function() {
 					"success" : function(data) {
 						settings.authToken = data;
 					},
-					"error" : settings.authError
+					"error" : authError
 				});
 			}
 			for (var i=0; i<readyFuncs.length; i++) {
@@ -172,11 +172,17 @@ $(function() {
 			}
 		}
 		function onClose(event) {
+			function isRetry() {
+				if (isMobile() && !isDocumentVisible()) {
+					return false;
+				}
+				return retryCount < settings.maxRetry;
+			}
 			logger.log("close", settings.url);
 			if (settings.onClose) {
 				settings.onClose(event);
 			}
-			if (retryCount < settings.maxRetry) {
+			if (isRetry()) {
 				setTimeout(function() {
 					if (!isConnected()) {
 						socket = createWebSocket();
@@ -248,7 +254,6 @@ $(function() {
 			retryCount = 0,
 			socket = createWebSocket();
 		$(window).on("beforeunload", close);
-logger.log("visibility", visibilityProp, visibilityChangeProp);
 		$(document).on(visibilityChangeProp, function() {
 			var bVisible = isDocumentVisible();
 			logger.log(visibilityChangeProp, "visible=" + bVisible);
@@ -259,8 +264,6 @@ logger.log("visibility", visibilityProp, visibilityChangeProp);
 		if (settings.noopCommand) {
 			on("noopCommand", function() {});
 		}
-
-
 		$.extend(this, {
 			"request" : request,
 			/** deprecated use on method.*/
@@ -282,6 +285,11 @@ logger.log("visibility", visibilityProp, visibilityChangeProp);
 			"onServerError" : function(func) { settings.onServerError = func; return this;}
 		});
 	};
+	$.extend(room.utils, {
+		"isIOS" : isIOS,
+		"isMobile" : isMobile,
+		"isDocumentVisible" : isDocumentVisible
+	});
 });
 if (typeof(room) === "undefined") room = {};
 
@@ -418,6 +426,16 @@ $(function() {
 			return newObj;
 		}
 	}
+	room.logger.WsLogger = function(wsUrl, commandName) {
+		var ws = new room.Connection(wsUrl);
+		commandName = commandName || "log";
+		this.log = function() {
+			ws.request({
+				"command": commandName,
+				"data": normalizeFunc(arguments)
+			});
+		};
+	};
 	room.logger.DivLogger = function($div) {
 		this.log = function() {
 			var msgs = [];
