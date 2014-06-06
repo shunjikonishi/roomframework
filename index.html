@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Roomframework</title>
+<link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" media="screen" href="assets/stylesheets/manual.css">
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container">
+	<div class="pull-right" style="margin-right: 10px;">
+		<a href="index.html"><img src="assets/images/flag_usa32.png"/></a>
+		<a href="index.html?lang=ja"><img src="assets/images/flag_jpn32.png"/></a>
+	</div>
+	<div id="content">
+	</div>
+	<footer>
+		<div class="copy-right">
+			COPYRIGHT（C）@shunjikonishi. ALL RIGHTS RESERVED
+		</div>
+		<div class="clearfix"></div>
+	</footer>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/marked/0.3.2/marked.min.js"></script>
+<script>
+$(function() {
+	var filename = location.search == "?lang=ja" ? "README_ja.md" : "README.md";
+	$.ajax({
+		"url" : filename,
+		"success" : function(data) {
+			var $content = $("#content");
+				
+
+			$content.html(marked(data));
+			$content.find("blockquote").addClass("alert alert-info");
+		}
+	})
+})
+</script>
+</body>
+</html>
