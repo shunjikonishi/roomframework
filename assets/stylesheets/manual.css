@@ -89,6 +89,10 @@ td:first-child {
 	white-space: nowrap;
 }
 
+td {
+	padding: 4px;
+}
+
 em {
 	font-weight: bold;
 	color: #FF0000;

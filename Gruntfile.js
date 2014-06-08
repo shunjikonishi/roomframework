@@ -31,17 +31,30 @@ module.exports = function(grunt) {
         },
         
         watch: {
-            files: [
-                'src/*.js'
-            ],
-            tasks: ['jshint', 'concat', 'uglify']
+            main: {
+                files: [
+                    'src/*.js'
+                ],
+                tasks: ['jshint', 'concat', 'uglify']
+            },
+            site: {
+                files: [
+                    '*.html',
+                    'assets/**/*',
+                    '*.md'
+                ],
+                tasks: [],
+                options: {
+                    livereload: true
+                }
+            },
         },
 
         connect: {
             server: {
                 options: {
                     port: 9000,
-                    keepalive: true
+                    livereload: true
                 }
             }
         }
@@ -56,5 +69,6 @@ module.exports = function(grunt) {
  
     // デフォルトタスクの設定
     grunt.registerTask('default', [ 'concat', 'uglify']);
+    grunt.registerTask('site', [ 'connect', 'watch:site']);
  
 };
