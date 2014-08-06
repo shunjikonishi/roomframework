@@ -52,9 +52,10 @@ $(function() {
 	 * - authToken
 	 * - onOpen(event)
 	 * - onClose(event)
+	 * - onMessage(event)
+	 * - onSocketError(event)
 	 * - onRequest(command, data)
-	 * - onMessage(data, startTime)
-	 * - onServerError(msg)
+	 * - onServerError(data)
 	 */
 	room.Connection = function(settings) {
 		function request(params) {
@@ -105,6 +106,7 @@ $(function() {
 		function off(name) {
 			delete listeners[name];
 			delete errors[name];
+			return self;
 		}
 		function onOpen(event) {
 			function authError(data) {

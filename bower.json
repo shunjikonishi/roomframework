@@ -1,0 +1,30 @@
+{
+  "name": "roomframework",
+  "version": "0.1.0",
+  "authors": [
+    "Shunji Konishi"
+  ],
+  "description": "Websocket framework",
+  "main": "roomframework.js",
+  "moduleType": [
+    "es6"
+  ],
+  "keywords": [
+    "websocket"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/shunjikonishi/roomframework",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "Procfile",
+    "assets",
+    "src",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^1.11.1"
+  }
+}
