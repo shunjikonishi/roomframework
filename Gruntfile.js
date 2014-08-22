@@ -68,7 +68,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-connect');
  
     // デフォルトタスクの設定
-    grunt.registerTask('default', [ 'concat', 'uglify']);
+    grunt.registerTask('default', ['jshint', 'concat', 'uglify']);
     grunt.registerTask('site', [ 'connect', 'watch:site']);
  
 };
