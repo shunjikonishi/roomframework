@@ -9,6 +9,7 @@ module.exports = function(grunt) {
                 src : [
                     "src/room.connection.js",
                     "src/room.cache.js",
+                    "src/room.templateManager.js",
                     "src/room.logger.js"
                 ],
                 dest: "dist/roomframework.js"
@@ -20,6 +21,7 @@ module.exports = function(grunt) {
                 files: [{
                     "dist/room.connection.min.js": "src/room.connection.js",
                     "dist/room.cache.min.js": "src/room.cache.js",
+                    "dist/room.templateManager.min.js": "src/room.templateManager.js",
                     "dist/room.logger.min.js": "src/room.logger.js",
                     "dist/roomframework.min.js": "dist/roomframework.js"
                 }]
@@ -68,7 +70,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-connect');
  
     // デフォルトタスクの設定
-    grunt.registerTask('default', ['jshint', 'concat', 'uglify']);
+    grunt.registerTask('default', [ 'jshint', 'concat', 'uglify']);
     grunt.registerTask('site', [ 'connect', 'watch:site']);
  
 };
