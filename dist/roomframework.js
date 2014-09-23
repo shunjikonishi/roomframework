@@ -409,7 +409,7 @@ $(function() {
 	room.TemplateManager = function(cache, loadFunc) {
 		function load($el, name, callback) {
 			function doLoad(html) {
-				$el.html(html);
+				$el.html(html).show();
 				if (callback) {
 					callback(html);
 				}
@@ -419,13 +419,17 @@ $(function() {
 				doLoad(html);
 				return;
 			}
-			loadFunc(function(data) {
-				cache.put("template." + name, data);
+			loadFunc(name, function(data) {
+				save(name, data);
 				doLoad(data);
 			});
 		}
+		function save(name, html) {
+			cache.put("template." + name, html);
+		}
 		$.extend(this, {
-			"load" : load
+			"load" : load,
+			"save" : save
 		});
 	};
 });
